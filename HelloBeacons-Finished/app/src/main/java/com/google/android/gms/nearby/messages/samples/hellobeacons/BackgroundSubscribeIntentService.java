@@ -23,7 +23,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.messages.Message;
@@ -52,23 +51,6 @@ public class BackgroundSubscribeIntentService extends IntentService {
         super.onCreate();
         updateNotification();
     }
-
-//    @Override
-//    protected void onHandleIntent(Intent intent) {
-//        if (intent != null) {
-//            Nearby.Messages.handleIntent(intent, new MessageListener() {
-//                @Override
-//                public void onFound(Message message) {
-//                    Log.i(TAG, "found message = " + message);
-//                }
-//
-//                @Override
-//                public void onLost(Message message) {
-//                    Log.i(TAG, "lost message = " + message);
-//                }
-//            });
-//        }
-//    }
 
     @Override
     protected void onHandleIntent(Intent intent) {
