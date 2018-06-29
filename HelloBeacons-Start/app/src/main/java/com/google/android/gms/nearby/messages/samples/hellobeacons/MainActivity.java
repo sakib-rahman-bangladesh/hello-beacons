@@ -34,7 +34,8 @@ import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.messages.MessagesOptions;
 import com.google.android.gms.nearby.messages.NearbyPermissions;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener{
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -66,5 +67,37 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Log.i(TAG, "GoogleApiClient connected");
+
+    }
+
+    private synchronized void buildGoogleApiClient() {
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addApi(Nearby.MESSAGES_API, new MessagesOptions.Builder()
+                            .setPermissions(NearbyPermissions.BLE).build())
+                    .addConnectionCallbacks(this)
+                    .enableAutoManage(this, this)
+                    .build();
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.w(TAG, "Connection suspended. Error code: " + i);
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        if (mContainer != null) {
+            Snackbar.make(mContainer,
+                    "Exception while connecting to Google Play services: " +
+                            connectionResult.getErrorMessage(),
+                    Snackbar.LENGTH_INDEFINITE).show();
+        }
     }
 }

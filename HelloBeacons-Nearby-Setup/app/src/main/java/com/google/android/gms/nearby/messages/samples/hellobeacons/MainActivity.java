@@ -44,6 +44,8 @@ public class MainActivity extends AppCompatActivity
         implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
+    private static final int PERMISSIONS_REQUEST_CODE = 1111;
+
     private static final String TAG = MainActivity.class.getSimpleName();
 
     /**
@@ -66,11 +68,95 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         mContainer = (RelativeLayout) findViewById(R.id.main_activity_container);
+
+        // CHECK permission
+        if (!havePermissions()) {
+            Log.i(TAG, "Requesting permissions needed for this app.");
+            requestPermissions();
+        }
+    }
+
+    private boolean havePermissions() {
+        return ContextCompat.checkSelfPermission(this,     Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestPermissions() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[]permissions, @NonNull int[] grantResults) {
+        if (requestCode != PERMISSIONS_REQUEST_CODE) {
+            return;
+        }
+
+        for (int i = 0; i < permissions.length; i++) {
+            String permission = permissions[i];
+            if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                if (shouldShowRequestPermissionRationale(permission)) {
+                    Log.i(TAG, "Permission denied without 'NEVER ASK AGAIN': "
+                            + permission);
+                    showRequestPermissionsSnackbar();
+                } else {
+                    Log.i(TAG, "Permission denied with 'NEVER ASK AGAIN': "
+                            + permission);
+                    showLinkToSettingsSnackbar();
+                }
+            } else {
+                Log.i(TAG, "Permission granted, building GoogleApiClient");
+                buildGoogleApiClient();
+            }
+        }
+    }
+
+    private void showLinkToSettingsSnackbar() {
+        if (mContainer == null) {
+            return;
+        }
+        Snackbar.make(mContainer,
+                R.string.permission_denied_explanation,
+                Snackbar.LENGTH_INDEFINITE)
+                .setAction(R.string.settings, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        // Build intent that displays the App settings screen.
+                        Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        Uri uri = Uri.fromParts("package",
+                                BuildConfig.APPLICATION_ID, null);
+                        intent.setData(uri);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                    }
+                }).show();
+    }
+
+    private void showRequestPermissionsSnackbar() {
+        if (mContainer == null) {
+            return;
+        }
+        Snackbar.make(mContainer, R.string.permission_rationale,
+                Snackbar.LENGTH_INDEFINITE)
+                .setAction(R.string.ok, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        // Request permission.
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                PERMISSIONS_REQUEST_CODE);
+                    }
+                }).show();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        if (havePermissions()) {
+            buildGoogleApiClient();
+        }
     }
 
     private synchronized void buildGoogleApiClient() {
