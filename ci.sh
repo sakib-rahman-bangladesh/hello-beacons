@@ -65,8 +65,9 @@ echo
 
 # 2018.June29
 ## STARTED contribution with Googlers
+## ADDED HelloBeacons-Display-Messages
 
-git commit -m "STARTED contribution with Googlers"
+git commit -m "ADDED HelloBeacons-Display-Messages"
 
 ############
 # Step: 05 #
